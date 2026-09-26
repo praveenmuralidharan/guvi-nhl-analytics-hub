@@ -153,23 +153,13 @@ def home_page():
     with cols[1]:
         if best_goalie is not None and not best_goalie.empty:
             g = best_goalie.iloc[0]
-            kpi_card("Best Save Percentage", g["player"],
-                     f"{g['save_pct']:.3f} in {int(g['games_played'])} games ({g['team_abbrev']})")
+            kpi_card("Best Goalie", g["player"],
+                     f"{g['save_pct']:.3f} save % in {int(g['games_played'])} games ({g['team_abbrev']})")
     with cols[2]:
         if leader is not None and not leader.empty:
             t = leader.iloc[0]
             kpi_card("League Leader", t["team_name"],
                      f"{int(t['points'])} points ({int(t['wins'])}-{int(t['losses'])}-{int(t['ot_losses'])})")
-
-    st.subheader("Top 5 teams")
-    show_table(get_data("""
-        SELECT t.logo_url AS Logo, t.team_name AS Team, t.division_name AS Division,
-               s.games_played AS GP, s.wins AS W, s.losses AS L, s.ot_losses AS OTL, s.points AS PTS
-        FROM standings s
-        JOIN teams t ON s.team_id = t.team_id
-        ORDER BY s.points DESC, s.wins DESC
-        LIMIT 5
-    """), column_config={"Logo": st.column_config.ImageColumn("", width="small")})
 
 
 def standings_page():
@@ -221,11 +211,9 @@ def team_page():
     team = st.selectbox("Choose a team", names)
 
     info = get_data("""
-        SELECT t.team_id, t.team_name, t.team_abbrev, t.conference_name, t.division_name, t.logo_url,
-               s.games_played, s.wins, s.losses, s.ot_losses, s.points, s.goals_for, s.goals_against
-        FROM teams t
-        LEFT JOIN standings s ON s.team_id = t.team_id
-        WHERE t.team_name = %s
+        SELECT team_id, team_name, team_abbrev, conference_name, division_name, logo_url
+        FROM teams
+        WHERE team_name = %s
     """, [team])
     if info is None or info.empty:
         st.warning("Team not found.")
@@ -239,17 +227,6 @@ def team_page():
     with col2:
         st.header(f"{t['team_name']} ({t['team_abbrev']})")
         st.write(f"{t['conference_name']} Conference, {t['division_name']} Division")
-
-    if pd.notna(t["points"]):
-        cols = st.columns(4)
-        with cols[0]:
-            kpi_card("Record (W-L-OTL)", f"{int(t['wins'])}-{int(t['losses'])}-{int(t['ot_losses'])}")
-        with cols[1]:
-            kpi_card("Points", int(t["points"]))
-        with cols[2]:
-            kpi_card("Goals For", int(t["goals_for"]))
-        with cols[3]:
-            kpi_card("Goals Against", int(t["goals_against"]))
 
     roster = get_data("""
         SELECT headshot_url AS Photo, jersey_number AS `#`,
@@ -418,7 +395,6 @@ def games_page():
     """, params)
     if df is not None and not df.empty:
         df["Status"] = df["Status"].map(STATE_LABELS).fillna(df["Status"])
-        st.caption(f"{len(df)} game(s)")
     show_table(df, "No games found for the selected filters.")
 
 
@@ -450,17 +426,15 @@ def leaderboards_page():
         LIMIT 10
     """
 
-    tabs = st.tabs(["Top Scorers", "Most Goals", "Most Penalty Minutes", "Best Save %", "Most Goalie Wins"])
+    tabs = st.tabs(["Top Scorers", "Most Penalty Minutes", "Best Save %", "Most Wins"])
     with tabs[0]:
         show_table(get_data(skater_board.format(order="PTS DESC, G DESC")))
     with tabs[1]:
-        show_table(get_data(skater_board.format(order="G DESC, PTS DESC")))
-    with tabs[2]:
         show_table(get_data(skater_board.format(order="PIM DESC, GP ASC")))
-    with tabs[3]:
+    with tabs[2]:
         st.caption(f"Minimum {MIN_GOALIE_GAMES} games played")
         show_table(get_data(goalie_board.format(order="gs.save_pct DESC"), [MIN_GOALIE_GAMES]))
-    with tabs[4]:
+    with tabs[3]:
         show_table(get_data(goalie_board.format(order="gs.wins DESC, gs.save_pct DESC"), [0]))
 
 
@@ -472,7 +446,6 @@ def sql_page():
         st.error(f"No queries found in {QUERIES_FILE.name}.")
         return
     choice = st.selectbox("Pick a pre-built query", list(queries))
-    st.code(queries[choice], language="sql")
     show_table(get_data(queries[choice]), "The query ran but returned no rows.")
 
 

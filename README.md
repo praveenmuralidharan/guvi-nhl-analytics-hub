@@ -99,7 +99,7 @@ jupyter notebook
 ```
 
 1. `01_explore_api.ipynb` (optional, about 1 minute) makes a sample call to each endpoint and shows the JSON structure the loader is built around.
-2. `02_fetch_and_load.ipynb` calls the API in a loop and inserts into MySQL table by table: teams, standings, players, games, season stats, then game stats. The first run takes about 35-40 minutes, mostly the one boxscore call per finished game and the lookups for players missing from the current rosters. It ends with checks: row counts, orphan checks, re-inserting the same data (which should add 0 rows) and a comparison with the live API.
+2. `02_fetch_and_load.ipynb` calls the API in a loop and inserts into MySQL table by table: teams, standings, players, games, season stats, then game stats. The first run takes about 35-40 minutes, mostly the one boxscore call per finished game and the lookups for players missing from the current rosters. It ends with checks: row counts, orphan checks and re-inserting the same data (which should add 0 rows).
 
 Re-running the loader is safe and quick (about 2 minutes). `INSERT IGNORE` skips rows that are already there, and the boxscore loop skips games that already have stats, so an interrupted run carries on where it stopped.
 
@@ -117,13 +117,13 @@ Navigation uses `streamlit-option-menu` in the sidebar.
 
 | Page | What it shows |
 |---|---|
-| Home | KPI cards (teams, players, games played, goals) and season highlights (top scorer, best save percentage, league leader) |
+| Home | KPI cards (teams, players, games played, goals) and season highlights (top scorer, best goalie, league leader) |
 | Standings | Full league table with team logos, filtered by conference (`st.radio`) and division (`st.selectbox`) |
-| Team Info | Pick a team to see its logo, record and players grouped into forwards, defense and goalies |
+| Team Info | Pick a team (`st.selectbox`) to see its logo, conference, division and players grouped into forwards, defense and goalies |
 | Player Search | Search by name (`st.text_input`), then see the headshot, bio and season stats as metric cards |
 | Game Results | Filter games by date range (`st.date_input`), team and game state (Final / Upcoming) |
-| Leaderboards | Tabs for top scorers, most goals, most penalty minutes, best save percentage and most goalie wins |
-| SQL Query | Dropdown of the 12 pre-built queries from `sql/queries.sql`; the selected query's SQL and results are shown |
+| Leaderboards | Tabs for top scorers, most penalty minutes, best save percentage and most wins |
+| SQL Query | Dropdown of the 12 pre-built queries from `sql/queries.sql`; the results of the selected query are shown |
 
 Filters are applied in SQL: each page builds its `WHERE` clause from only the filters the user picked, using parameterized queries. Invalid SQL, a stopped database server and empty results all show a clear message instead of an error trace.
 
