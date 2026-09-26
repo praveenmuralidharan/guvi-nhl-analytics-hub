@@ -123,7 +123,7 @@ Navigation uses `streamlit-option-menu` in the sidebar.
 | Player Search | Search by name (`st.text_input`), then see the headshot, bio and season stats as metric cards |
 | Game Results | Filter games by date range (`st.date_input`), team and game state (Final / Upcoming) |
 | Leaderboards | Tabs for top scorers, most goals, most penalty minutes, best save percentage and most goalie wins |
-| SQL Query | Dropdown of the 12 pre-built queries from `sql/queries.sql`, plus a box to run your own SELECT query |
+| SQL Query | Dropdown of the 12 pre-built queries from `sql/queries.sql`; the selected query's SQL and results are shown |
 
 Filters are applied in SQL: each page builds its `WHERE` clause from only the filters the user picked, using parameterized queries. Invalid SQL, a stopped database server and empty results all show a clear message instead of an error trace.
 

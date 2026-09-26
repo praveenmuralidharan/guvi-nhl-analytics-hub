@@ -470,25 +470,10 @@ def sql_page():
     queries = load_queries(QUERIES_FILE)
     if not queries:
         st.error(f"No queries found in {QUERIES_FILE.name}.")
-    else:
-        choice = st.selectbox("Pick a pre-built query", list(queries))
-        st.code(queries[choice], language="sql")
-        show_table(get_data(queries[choice]), "The query ran but returned no rows.")
-
-    st.divider()
-    st.subheader("Run your own query")
-    custom = st.text_area("SELECT statements only", height=150,
-                          placeholder="SELECT team_name, division_name FROM teams ORDER BY team_name")
-    if st.button("Run query"):
-        sql = custom.strip().rstrip(";").strip()
-        if not sql:
-            st.warning("Type a query first.")
-        elif not re.match(r"(select|with)\b", sql, re.IGNORECASE):
-            st.error("Only SELECT queries can be run from this page.")
-        elif ";" in sql:
-            st.error("Please run one query at a time.")
-        else:
-            show_table(get_data(sql), "The query ran but returned no rows.")
+        return
+    choice = st.selectbox("Pick a pre-built query", list(queries))
+    st.code(queries[choice], language="sql")
+    show_table(get_data(queries[choice]), "The query ran but returned no rows.")
 
 
 PAGES = {
