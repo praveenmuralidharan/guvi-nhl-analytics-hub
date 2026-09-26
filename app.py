@@ -184,8 +184,9 @@ def standings_page():
         else:
             divisions = get_data("SELECT DISTINCT division_name FROM teams WHERE conference_name = %s "
                                  "ORDER BY division_name", [conference])
-        options = ["All"] + ([] if divisions is None else divisions["division_name"].tolist())
-        division = st.selectbox("Division", options)
+        if divisions is None:
+            return
+        division = st.selectbox("Division", ["All"] + divisions["division_name"].tolist())
 
     conditions, params = [], []
     if conference != "All":
